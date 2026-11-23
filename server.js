@@ -86,6 +86,6 @@ http.createServer((req,res)=>{
       return res.end(JSON.stringify({error:'unknown'}));
     }); return;
   }
-  let file=req.url==='/'?'/public/index.html':req.url; let full=path.join(__dirname,file);
+  let file=req.url==='/'?'/index.html':req.url; let full=path.join(__dirname,file);
   fs.readFile(full,(e,data)=>{ if(e){ res.writeHead(404); return res.end('Not found'); } res.writeHead(200,{'Content-Type':'text/html; charset=utf-8'}); res.end(data); });
 }).listen(process.env.PORT || 8000,'0.0.0.0',()=>console.log('BRO ONLINE READY'));
