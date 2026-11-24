@@ -53,27 +53,14 @@ http.createServer((req,res)=>{
         db.invites[id]={id,from:d.from,to:d.to,created:Date.now()};
         save(); return res.end(JSON.stringify({ok:true,id}));
       }
-      if(req.url==='/api/invite/list'){
-        let list=Object.values(db.invites||{}).filter(x=>x.to===d.username);
-        return res.end(JSON.stringify({invites:list}));
-      }
+      if(req.url==='/api/invite/list'){ let list=Object.values(db.invites||{}).filter(x=>x.to===d.username); return res.end(JSON.stringify({invites:list})); }
       if(req.url==='/api/invite/respond'){
         let inv=db.invites[d.id]; if(!inv) return res.end(JSON.stringify({error:'Invite expired'}));
         delete db.invites[d.id];
-        if(d.accept){
-          let party=db.parties[inv.from]||[inv.from];
-          if(party.length>=4) return res.end(JSON.stringify({error:'Party is full'}));
-          if(!party.includes(inv.to)) party.push(inv.to);
-          db.parties[inv.from]=party; db.parties[inv.to]=party;
-        }
+        if(d.accept){ let party=db.parties[inv.from]||[inv.from]; if(party.length>=4) return res.end(JSON.stringify({error:'Party is full'})); if(!party.includes(inv.to)) party.push(inv.to); db.parties[inv.from]=party; db.parties[inv.to]=party; }
         save(); return res.end(JSON.stringify({ok:true}));
       }
-      if(req.url==='/api/queue/join'){
-        let mode=d.mode; let cap=CAP[mode]||30;
-        if(db.queue[mode].length>=cap) return res.end(JSON.stringify({error:'This mode is full ('+cap+' players). Please try again.',full:true}));
-        if(!db.queue[mode].includes(d.username)) db.queue[mode].push(d.username);
-        return res.end(JSON.stringify({ok:true}));
-      }
+      if(req.url==='/api/queue/join'){ let mode=d.mode; let cap=CAP[mode]||30; if(db.queue[mode].length>=cap) return res.end(JSON.stringify({error:'This mode is full ('+cap+' players). Please try again.',full:true})); if(!db.queue[mode].includes(d.username)) db.queue[mode].push(d.username); return res.end(JSON.stringify({ok:true})); }
       if(req.url==='/api/queue/status'){ return res.end(JSON.stringify({players:[...db.queue[d.mode]]})); }
       if(req.url==='/api/rooms/list'){ let list=Object.entries(db.rooms).map(([code,r])=>({code,mode:r.mode,players:r.players,max:r.max})); return res.end(JSON.stringify({rooms:list})); }
       if(req.url==='/api/rooms/create'){ let code=Math.floor(1000+Math.random()*9000).toString(); let max=d.mode==='solo'?30:d.mode==='duo'?30:32; db.rooms[code]={mode:d.mode,players:[d.username],max,created:Date.now()}; save(); return res.end(JSON.stringify({code,room:db.rooms[code]})); }
