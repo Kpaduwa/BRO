@@ -4,19 +4,7 @@ let db={users:{}, devices:{}, friends:{}, rooms:{}, queue:{solo:[],duo:[],squad:
 try{ db=JSON.parse(fs.readFileSync(DB_FILE,'utf8')); if(!db.bots) db.bots={}; if(!db.invites) db.invites={}; if(!db.parties) db.parties={}; if(!db.queue) db.queue={solo:[],duo:[],squad:[]}; if(!db.matchmaking) db.matchmaking={}; }catch(e){}
 function save(){ try{ fs.writeFileSync(DB_FILE, JSON.stringify(db)); }catch(e){} }
 setInterval(save, 5000);
-// ROOM AUTO-CLOSE: if creator offline >15s, delete room forever
-setInterval(()=>{
-  let now=Date.now(); let changed=false;
-  for(let code in db.rooms){
-    let r=db.rooms[code];
-    let owner=db.users[r.owner];
-    let lastSeen=owner?owner.lastSeen:0;
-    if(!owner || (now-lastSeen>15000)){
-      delete db.rooms[code]; changed=true;
-    }
-  }
-  if(changed) save();
-},5000);
+setInterval(()=>{ let now=Date.now(); let changed=false; for(let code in db.rooms){ let r=db.rooms[code]; let owner=db.users[r.owner]; let lastSeen=owner?owner.lastSeen:0; if(!owner || (now-lastSeen>15000)){ delete db.rooms[code]; changed=true; } } if(changed) save(); },5000);
 const CAP={solo:30,duo:30,squad:32};
 function getMM(mode){ let now=Date.now(); let mm=db.matchmaking[mode]; if(!mm || now>=mm.endsAt){ mm={players:[],startedAt:now,endsAt:now+30000,mode}; db.matchmaking[mode]=mm; } return mm; }
 http.createServer((req,res)=>{
